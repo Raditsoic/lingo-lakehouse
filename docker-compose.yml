@@ -1,6 +1,6 @@
 version: '3.9'
 
-name: data-pipeline
+name: duolingo
 
 services:
   zookeeper:
@@ -95,11 +95,11 @@ services:
       MB_DB_PORT: 5432
       MB_DB_USER: metabase
       MB_DB_PASS: metabase
-      MB_DB_HOST: metabase-postgres
+      MB_DB_HOST: postgres-metabase
     depends_on:
-      - metabase-postgres
+      - postgres-metabase
 
-  metabase-postgres:
+  postgres-metabase:
     image: postgres:latest
     environment:
       POSTGRES_DB: metabase

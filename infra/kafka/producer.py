@@ -3,8 +3,9 @@ import pandas as pd
 import json
 
 conf = {
-    'bootstrap.servers': 'localhost:9092',  
+    'bootstrap.servers': 'localhost:29092',  
     'client.id': 'producer',
+    'queue.buffering.max.messages': 1000000,
 }
 
 producer = Producer(**conf)
