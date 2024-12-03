@@ -5,7 +5,7 @@ import json
 conf = {
     'bootstrap.servers': 'localhost:29092',  
     'client.id': 'producer',
-    'queue.buffering.max.messages': 1000000,
+    'queue.buffering.max.messages': 100_000_000,
 }
 
 producer = Producer(**conf)

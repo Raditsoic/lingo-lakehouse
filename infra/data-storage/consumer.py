@@ -21,7 +21,7 @@ minio_client = Minio(
     secure=False  
 )
 
-bucket_name = "duolingo-raw"
+bucket_name = "duolingo"
 if not minio_client.bucket_exists(bucket_name):
     minio_client.make_bucket(bucket_name)
 
@@ -48,7 +48,7 @@ try:
             df.to_parquet(parquet_buffer, index=False, engine='pyarrow')
             parquet_buffer.seek(0)
 
-            object_name = f"duolingo_batch_{record['timestamp']}.parquet"
+            object_name = f"raw/duolingo_batch_{record['timestamp']}.parquet"
             minio_client.put_object(
                 bucket_name=bucket_name,
                 object_name=object_name,
