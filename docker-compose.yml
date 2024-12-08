@@ -75,12 +75,26 @@ services:
       - 5432:5432
     environment:
       POSTGRES_DB: mldb
-      POSTGRES_USER: mluser
-      POSTGRES_PASSWORD: mlpassword
+      POSTGRES_USER: soic
+      POSTGRES_PASSWORD: 123
     volumes:
       - postgres-ml-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U mluser -d mldb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-metabase:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: metabase
+      POSTGRES_USER: metabase
+      POSTGRES_PASSWORD: metabase
+    volumes:
+      - metabase-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U metabase -d metabase"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -98,20 +112,6 @@ services:
       MB_DB_HOST: postgres-metabase
     depends_on:
       - postgres-metabase
-
-  postgres-metabase:
-    image: postgres:latest
-    environment:
-      POSTGRES_DB: metabase
-      POSTGRES_USER: metabase
-      POSTGRES_PASSWORD: metabase
-    volumes:
-      - metabase-postgres-data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U metabase -d metabase"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
 volumes:
   zookeeper-data:
