@@ -1,38 +1,36 @@
 from fastapi import FastAPI, HTTPException, Depends
 from dto import UserRequest
-from usecase import fetch_user_data, rank_words
+from usecase import fetch_user_data, rank_words, inference
 import asyncpg
 import os
+from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 
-
 load_dotenv()
-app = FastAPI()
-
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-async def get_pool():
+app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     pool = await asyncpg.create_pool(DATABASE_URL)
-    yield pool
+    app.state.pool = pool
+    try:
+        yield
+    finally:
+        await pool.close()
 
-async def connect_to_db():
-    db = await asyncpg.connect(DATABASE_URL)
-    yield db
-    await db.close()
+app = FastAPI(lifespan=lifespan)
 
-@app.on_event("startup")
-async def startup():
-    app.state.pool = Depends(get_pool)
-
-@app.on_event("shutdown")
-async def shutdown():
-    await app.state.db.close()
+async def get_pool():
+    return app.state.pool
 
 @app.get("/")
 async def root():
-    return {"message": "Duolingo Birdbrain Api"}
+    return {"message": "Duolingo Birdbrain API"}
 
-@app.route("/words", methods=["POST"])
+# Recommendation endpoint
+@app.post("/words-recommendation")
 async def recommend_words(request: UserRequest, pool: asyncpg.pool = Depends(get_pool)):
     user_id = request.user_id
     
@@ -41,7 +39,7 @@ async def recommend_words(request: UserRequest, pool: asyncpg.pool = Depends(get
         raise HTTPException(status_code=404, detail="User data not found")
     
     # Run ML model
-    recall_predictions = inferece(user_data)
+    recall_predictions = inference(user_data)
     
     # Apply SRA logic
     recommendations = rank_words(recall_predictions)

@@ -3,6 +3,7 @@ from minio import Minio
 import json
 import pandas as pd
 from io import BytesIO
+from datetime import datetime, timedelta
 
 conf = {
     'bootstrap.servers': 'localhost:29092',
@@ -26,7 +27,9 @@ if not minio_client.bucket_exists(bucket_name):
     minio_client.make_bucket(bucket_name)
 
 print("Listening to Kafka topic and uploading to MinIO...")
+
 data_list = []
+window_start = datetime.now()
 
 try:
     while True:
@@ -40,8 +43,8 @@ try:
         record = json.loads(msg.value().decode('utf-8'))
         data_list.append(record)
 
-        # Batch write every 100 messages
-        if len(data_list) >= 100:
+        current_time = datetime.now()
+        if current_time - window_start >= timedelta(minutes=15):
             df = pd.DataFrame(data_list)
             print(df)
             parquet_buffer = BytesIO()
@@ -59,6 +62,7 @@ try:
             print(f"Uploaded {object_name} to MinIO")
 
             data_list = []
+            window_start = current_time
 
 except KeyboardInterrupt:
     print("Shutting down consumer...")
