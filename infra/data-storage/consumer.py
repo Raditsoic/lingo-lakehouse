@@ -43,8 +43,10 @@ try:
         record = json.loads(msg.value().decode('utf-8'))
         data_list.append(record)
 
+        print(data_list)
+
         current_time = datetime.now()
-        if current_time - window_start >= timedelta(minutes=15):
+        if current_time - window_start >= timedelta(minutes=1):
             df = pd.DataFrame(data_list)
             print(df)
             parquet_buffer = BytesIO()
@@ -76,7 +78,7 @@ finally:
         df.to_parquet(parquet_buffer, index=False, engine='pyarrow')
         parquet_buffer.seek(0)
 
-        object_name = f"duolingo_batch_final.parquet"
+        object_name = f"raw/duolingo_batch_final.parquet"
         minio_client.put_object(
             bucket_name=bucket_name,
             object_name=object_name,
