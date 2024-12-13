@@ -8,7 +8,7 @@ spark = SparkSession.builder \
     .config("spark.jars.packages", "org.apache.hadoop:hadoop-aws:3.2.0") \
     .config("spark.hadoop.fs.s3a.access.key", "minio") \
     .config("spark.hadoop.fs.s3a.secret.key", "minio123") \
-    .config("spark.hadoop.fs.s3a.endpoint", "http://host.docker.internal:9000") \
+    .config("spark.hadoop.fs.s3a.endpoint", "http://localhost:9000") \
     .config("spark.hadoop.fs.s3a.path.style.access", "true") \
     .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem") \
     .config("spark.hadoop.fs.s3n.impl", "org.apache.hadoop.fs.s3native.S3NativeFileSystem") \
@@ -16,7 +16,7 @@ spark = SparkSession.builder \
     .getOrCreate()
 
 minio_client = Minio(
-    "host.docker.internal:9000",
+    "localhost:9000",
     access_key="minio",
     secret_key="minio123",
     secure=False
@@ -75,8 +75,8 @@ if input_path:
     )
 
     ml_output_path = f"s3a://{bucket_name}/ml/duolingo_transformed_{latest_timestamp}.csv"
-    visual_output_path = f"s3a://{bucket_name}/database/duolingo_transformed_{latest_timestamp}.csv"
-    warehouse_output_path = f"s3a://{bucket_name}/visual/duolingo_transformed_{latest_timestamp}.csv"
+    visual_output_path = f"s3a://{bucket_name}/visual/duolingo_transformed_{latest_timestamp}.csv"
+    warehouse_output_path = f"s3a://{bucket_name}/database/duolingo_transformed_{latest_timestamp}.csv"
 
     ml_df.write.mode("overwrite").option("header", "true").csv(ml_output_path)
     metabase_df.write.mode("overwrite").option("header", "true").csv(visual_output_path)

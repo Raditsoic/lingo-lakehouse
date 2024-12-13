@@ -11,6 +11,11 @@ bash dataset/download.sh
 docker-compose up -d
 ```
 
+### **Start Consumer and Producer**
+```sh
+python infra/data-storage/consumer.py 
+python python infra/ingestion/producer.py
+```
 ### **ELT**
 ```sh
 spark-submit --packages org.apache.hadoop:hadoop-aws:3.3.2 ./infra/elt/elt.py
