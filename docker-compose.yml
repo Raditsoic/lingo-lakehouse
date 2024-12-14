@@ -6,10 +6,10 @@ services:
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
     environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_CLIENT_PORT: ${ZOOKEEPER_CLIENT_PORT}
+      ZOOKEEPER_TICK_TIME: ${ZOOKEEPER_TICK_TIME}
     ports:
-      - 22181:2181
+      - ${ZOOKEEPER_PORT}:2181
     volumes:
       - zookeeper-data:/var/lib/zookeeper/data
       - zookeeper-logs:/var/lib/zookeeper/log
@@ -19,25 +19,25 @@ services:
     depends_on:
       - zookeeper
     ports:
-      - 29092:29092
+      - ${KAFKA_PORT}:29092
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_BROKER_ID: ${KAFKA_BROKER_ID}
+      KAFKA_ZOOKEEPER_CONNECT: ${KAFKA_ZOOKEEPER_CONNECT}
+      KAFKA_ADVERTISED_LISTENERS: ${KAFKA_ADVERTISED_LISTENERS}
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: ${KAFKA_LISTENER_SECURITY_PROTOCOL_MAP}
+      KAFKA_INTER_BROKER_LISTENER_NAME: ${KAFKA_INTER_BROKER_LISTENER_NAME}
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: ${KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR}
     volumes:
       - kafka-data:/var/lib/kafka/data
 
   minio:
     image: minio/minio:latest
     ports:
-      - 9000:9000
-      - 9001:9001
+      - ${MINIO_PORT}:9000
+      - ${MINIO_CONSOLE_PORT}:9001
     environment:
-      MINIO_ROOT_USER: minio
-      MINIO_ROOT_PASSWORD: minio123
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     command: server /data --console-address ":9001"
     volumes:
       - minio-data:/data
@@ -50,7 +50,7 @@ services:
   spark:
     image: apache/spark:latest
     ports:
-      - 4040:4040
+      - ${SPARK_PORT}:4040
     volumes:
       - ./spark/app:/opt/spark/work-dir
       - ./spark/data:/opt/spark/data
@@ -72,15 +72,15 @@ services:
   postgres-warehouse:
     image: postgres:latest
     ports:
-      - 5432:5432
+      - ${POSTGRES_PORT}:5432
     environment:
-      POSTGRES_USER: soic
-      POSTGRES_PASSWORD: 123
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U soic"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -88,16 +88,44 @@ services:
   metabase:
     image: metabase/metabase:latest
     ports:
-      - 3000:3000
+      - ${METABASE_PORT}:3000
     environment:
       MB_DB_TYPE: postgres
-      MB_DB_DBNAME: metabase
-      MB_DB_PORT: 5432
-      MB_DB_USER: soic
-      MB_DB_PASS: 123
+      MB_DB_DBNAME: ${METABASE_DBNAME}
+      MB_DB_PORT: ${POSTGRES_PORT}
+      MB_DB_USER: ${POSTGRES_USER}
+      MB_DB_PASS: ${POSTGRES_PASSWORD}
       MB_DB_HOST: postgres-warehouse
     depends_on:
       - postgres-warehouse
+
+  airflow:
+    image: apache/airflow:latest
+    container_name: airflow
+    user: "0:0"
+    ports:
+      - ${AIRFLOW_PORT}:8080
+    environment:
+      AIRFLOW__CORE__EXECUTOR: ${AIRFLOW_EXECUTOR}
+      AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY}
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: ${AIRFLOW_SQL_ALCHEMY_CONN}
+      AIRFLOW__CORE__LOAD_EXAMPLES: ${AIRFLOW_LOAD_EXAMPLES}
+      AIRFLOW__WEBSERVER__ENABLE_PROXY_FIX: ${AIRFLOW_WEBSERVER_ENABLE_PROXY_FIX}
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
+      - ./infra/automation:/opt/airflow/automation
+    depends_on:
+      - postgres-warehouse
+      - minio
+    command: >
+      bash -c "
+        airflow db upgrade && 
+        airflow users create -u ${AIRFLOW_ADMIN_USER} -p ${AIRFLOW_ADMIN_PASSWORD} -f ${AIRFLOW_ADMIN_FIRST_NAME} -l ${AIRFLOW_ADMIN_LAST_NAME} -r Admin -e ${AIRFLOW_ADMIN_EMAIL} &&
+        airflow webserver & 
+        airflow scheduler
+      "
 
 volumes:
   zookeeper-data:
