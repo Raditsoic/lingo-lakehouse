@@ -12,5 +12,8 @@ async def fetch_user_data(db_connection, user_id):
     column_names = list(records[0].keys())
     
     data_dicts = [dict(record) for record in records]
+
+    data_df = pd.DataFrame(data_dicts, columns=column_names)
+    data_df = data_df.drop_duplicates(subset=['lexeme_id'], keep='first')
     
-    return pd.DataFrame(data_dicts, columns=column_names)
+    return data_df

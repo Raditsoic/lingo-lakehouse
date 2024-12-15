@@ -21,9 +21,11 @@ def rank_words(predictions: pd.DataFrame) -> list:
     try:
         # Sort by predicted recall in descending order
         ranked_words = predictions.sort_values(by='predicted_recall', ascending=True)
+
+        ranked_words = ranked_words.head(10)
         
         # Convert to list of dictionaries for API response
-        recommendations = ranked_words[['lexeme_id', 'predicted_recall']].to_dict('records')
+        recommendations = ranked_words[['lexeme_id', 'predicted_recall', 'lexeme_string']].to_dict('records')
         
         return recommendations
     except Exception as e:

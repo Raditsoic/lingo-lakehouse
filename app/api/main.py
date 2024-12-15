@@ -1,9 +1,10 @@
-from fastapi import FastAPI, HTTPException, Depends, Query
-from usecase import fetch_user_data, rank_words, inference, load_latest_model_and_tokenizers, prepare_new_data
 import asyncpg
 import os
+from fastapi import FastAPI, HTTPException, Depends, Query
+from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
+from usecase import fetch_user_data, rank_words, inference, load_latest_model_and_tokenizers, prepare_new_data
 
 load_dotenv()
 DATABASE_URL = os.getenv("APP_DATABASE_URL")
@@ -21,6 +22,19 @@ async def lifespan(app: FastAPI):
         await pool.close()
 
 app = FastAPI(lifespan=lifespan)
+
+origins = [
+    "http://localhost:5173",  # React development server 
+    "http://127.0.0.1:5173",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  
+    allow_credentials=True,
+    allow_methods=["*"],  
+    allow_headers=["*"], 
+)
 
 async def get_pool():
     return app.state.pool
@@ -42,10 +56,10 @@ async def recommend_words(user_id: str = Query(..., description="The ID of the u
         raise HTTPException(status_code=404, detail="User data not found")
 
     # Prepare new data for model inference
-    prepared_data = prepare_new_data(user_data, app.state.tokenizer)
+    prepared_data, lexeme_string = prepare_new_data(user_data, app.state.tokenizer)
     
     # Inference
-    recall_predictions = inference(prepared_data, app.state.model)
+    recall_predictions = inference(prepared_data, lexeme_string, app.state.model)
     
     # Apply SRA logic
     recommendations = rank_words(recall_predictions)

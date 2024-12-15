@@ -1,12 +1,12 @@
 import './App.css'
 import Navbar from './components/Navbar'
+import WordRecommendation from './components/Recommendation'
 
 function App() {
   return (
     <>
-      <div className='bg-gray-800'>
         <Navbar />
-      </div>
+        <WordRecommendation />
     </>
   )
 }

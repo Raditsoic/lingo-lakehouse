@@ -39,11 +39,12 @@ def load_latest_model_and_tokenizers(
     return loaded_model, loaded_label_encoders
 
 def prepare_new_data(new_data: pd.DataFrame, label_encoders: dict) -> pd.DataFrame:
-    print(f"Preparing new data of shape: {new_data.shape}")
     try:
         new_data['accuracy_rate'] = new_data['history_correct'] / new_data['history_seen']
         new_data['session_accuracy'] = new_data['session_correct'] / new_data['session_seen']
         new_data['delta_days'] = new_data['delta'] / (60 * 60 * 24)
+
+        lexeme_string = new_data['lexeme_string']
 
         categorical_cols = ['user_id', 'learning_language', 'lexeme_id']
         for col in categorical_cols:
@@ -54,18 +55,20 @@ def prepare_new_data(new_data: pd.DataFrame, label_encoders: dict) -> pd.DataFra
             
         inference_data = new_data.drop(columns=['delta', 'history_seen', 'history_correct', 'session_seen', 'session_correct', 'lexeme_string', 'timestamp', 'p_recall',])
         
-        return inference_data
+        return inference_data, lexeme_string
     except Exception as e:
         print(f"Error in prepare_new_data: {e}")
         raise
 
-def inference(data: pd.DataFrame, model) -> pd.DataFrame:
+def inference(data: pd.DataFrame, lexeme_string: pd.Series, model) -> pd.DataFrame:
     try:
         predicted_recalls = model.predict(data)
         
         data['predicted_recall'] = predicted_recalls
         
         data['predicted_recall'] = data['predicted_recall'].apply(lambda x: f"{x:.2f}")
+
+        data['lexeme_string'] = lexeme_string.values
         
         return data
     except Exception as e:
