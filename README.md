@@ -13,21 +13,10 @@ docker-compose up -d
 
 ### **Start Consumer and Producer**
 ```sh
-python infra/data-storage/consumer.py 
-python python infra/ingestion/producer.py
-```
-### **ELT**
-```sh
-spark-submit --packages org.apache.hadoop:hadoop-aws:3.3.2 ./infra/elt/elt.py
+bash start.sh
 ```
 
-### **Data Transfer**
-
+### **Apply Orchestration**
 ```sh
-spark-submit --packages org.apache.hadoop:hadoop-aws:3.3.2,org.postgresql:postgresql:42.5.0 ./infra/data-warehouse/data-transfer.py
-```
-
-### **Training**
-```sh
-py ./infra/ml-flow/training-script.py
+Go to http://localhost:8080, login and then apply Scripts
 ```
