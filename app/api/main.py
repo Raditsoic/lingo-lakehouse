@@ -1,13 +1,12 @@
-from fastapi import FastAPI, HTTPException, Depends
-from dto import UserRequest
-from usecase import fetch_user_data, rank_words, inference
+from fastapi import FastAPI, HTTPException, Depends, Query
+from usecase import fetch_user_data, rank_words, inference, load_latest_model_and_tokenizers, prepare_new_data
 import asyncpg
 import os
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 
 load_dotenv()
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = os.getenv("APP_DATABASE_URL")
 
 app = FastAPI()
 
@@ -15,6 +14,7 @@ app = FastAPI()
 async def lifespan(app: FastAPI):
     pool = await asyncpg.create_pool(DATABASE_URL)
     app.state.pool = pool
+    app.state.model, app.state.tokenizer = load_latest_model_and_tokenizers()
     try:
         yield
     finally:
@@ -25,21 +25,27 @@ app = FastAPI(lifespan=lifespan)
 async def get_pool():
     return app.state.pool
 
+async def get_model():
+    return app.state.model
+
 @app.get("/")
 async def root():
     return {"message": "Duolingo Birdbrain API"}
 
 # Recommendation endpoint
-@app.post("/words-recommendation")
-async def recommend_words(request: UserRequest, pool: asyncpg.pool = Depends(get_pool)):
-    user_id = request.user_id
-    
+@app.get("/words-recommendation")
+async def recommend_words(user_id: str = Query(..., description="The ID of the user"), pool: asyncpg.pool = Depends(get_pool)):
+
+    # Fetch user data    
     user_data = await fetch_user_data(pool, user_id)
     if user_data.empty:
         raise HTTPException(status_code=404, detail="User data not found")
+
+    # Prepare new data for model inference
+    prepared_data = prepare_new_data(user_data, app.state.tokenizer)
     
-    # Run ML model
-    recall_predictions = inference(user_data)
+    # Inference
+    recall_predictions = inference(prepared_data, app.state.model)
     
     # Apply SRA logic
     recommendations = rank_words(recall_predictions)

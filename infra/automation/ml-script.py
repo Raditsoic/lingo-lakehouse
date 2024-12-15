@@ -5,6 +5,11 @@ from sklearn.metrics import mean_squared_error
 import xgboost as xgb
 import datetime
 import psycopg2
+import pickle
+import os
+
+os.makedirs("app/api/models", exist_ok=True)
+os.makedirs("app/api/tokenizers", exist_ok=True)
 
 conn = psycopg2.connect(
     host="localhost",
@@ -59,40 +64,12 @@ try:
     model_filename = f"{model_path}/xgboost_model_{timestamp}.json" 
     model.save_model(model_filename)
     print(f"Model saved as {model_filename}")
+
+    tokenizer_path = "app/api/tokenizers"
+    tokenizer_filename = f"{tokenizer_path}/label_encoders_{timestamp}.pkl"
+    with open(tokenizer_filename, 'wb') as f:
+        pickle.dump(label_encoders, f)
+    print(f"Label encoders saved as {tokenizer_filename}")
 except Exception as e:
     print(f"Error saving model: {e}")
-
-try:
-    new_data = pd.DataFrame({
-        'delta': [3600, 7200],
-        'user_id': ['u:FO', 'u:FO'],
-        'learning_language': ['de', 'de'],
-        'lexeme_id': ['76390c1350a8dac31186187e2fe1e178', '7dfd7086f3671685e2cf1c1da72796d7'],
-        'history_seen': [8, 6],
-        'history_correct': [6, 4],
-        'session_seen': [3, 2],
-        'session_correct': [2, 1],
-    })
-
-    # Preprocess new data
-    new_data['accuracy_rate'] = new_data['history_correct'] / new_data['history_seen']
-    new_data['session_accuracy'] = new_data['session_correct'] / new_data['session_seen']
-    new_data['delta_days'] = new_data['delta'] / (60 * 60 * 24)
-
-    # Encode categorical variables using the label encoders from training
-    for col in categorical_cols:
-        new_data[col] = label_encoders[col].transform(new_data[col])
-
-    # Drop unnecessary columns
-    new_data = new_data.drop(columns=['delta', 'history_seen', 'history_correct', 'session_seen', 'session_correct'])
-
-    predicted_recalls = model.predict(new_data)
-    print(f"Predicted Recall Probability: {predicted_recalls[0]:.2f}")
-
-    new_data['predicted_recall'] = predicted_recalls
-
-    ranked_words = new_data.sort_values(by='predicted_recall', ascending=False)
-    print(ranked_words[['lexeme_id', 'predicted_recall']])
-except Exception as e:
-    print(f"Error predicting new data: {e}")
 
