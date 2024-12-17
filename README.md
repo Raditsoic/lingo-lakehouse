@@ -27,6 +27,8 @@ Untuk menjalankan program, kita mendownload dataset duolingo dengan menjalankan 
 pindahkan dataset (duolingo-spaced-repetition-data.csv)ke folder dataset
 ## How to run?
 
+sebelum menjalankan semuanya pastikan sudah membuat file .env sesuai dengan .env.example
+
 ### **Environtment**
 ```sh
 docker-compose up -d
