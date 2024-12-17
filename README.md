@@ -12,7 +12,7 @@ Projek ini merupakan sebuah projek yang akan merekomendasikan language learning 
 
 
 ## Workflow
-![workflow](Docummentation\Workflow.jpg)
+![workflow](https://github.com/Raditsoic/lingo-lakehouse/blob/main/Docummentation/Workflow.jpg)
 
 # How The Program Works
 ## Download Dataset
