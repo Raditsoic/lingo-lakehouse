@@ -1,0 +1,17 @@
+FROM apache/airflow:latest
+
+# Install Java and PostgreSQL development libraries as root
+USER root
+RUN apt-get update && apt-get install -y \
+    openjdk-17-jdk \
+    procps \
+    libpq-dev && \
+    apt-get clean
+
+# Set JAVA_HOME
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+
+# Install Python packages
+USER airflow
+COPY requirements.txt /requirements.txt
+RUN pip install --no-cache-dir -r /requirements.txt

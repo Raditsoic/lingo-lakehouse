@@ -177,7 +177,7 @@ def main():
         kafka_config=kafka_conf, 
         minio_config=minio_conf, 
         topic="duolingo",
-        batch_window=5  # 5-minute batch 
+        batch_window=1  # 5-minute batch 
     )
     consumer.consume()
 

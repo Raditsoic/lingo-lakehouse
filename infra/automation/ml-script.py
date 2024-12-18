@@ -12,7 +12,7 @@ os.makedirs("app/api/models", exist_ok=True)
 os.makedirs("app/api/tokenizers", exist_ok=True)
 
 conn = psycopg2.connect(
-    host="localhost",
+    host="postgres-warehouse",
     database="mldb",
     user="soic",
     password="123"
@@ -59,13 +59,14 @@ for true, pred in zip(y_test[:5], y_pred[:5]):
 
 # Save the model with a timestamped filename
 try:
-    model_path = "app/api/models"
+    model_path = "/local/models"
+    tokenizer_path = "/local/tokenizers"
+
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")  
     model_filename = f"{model_path}/xgboost_model_{timestamp}.json" 
     model.save_model(model_filename)
     print(f"Model saved as {model_filename}")
 
-    tokenizer_path = "app/api/tokenizers"
     tokenizer_filename = f"{tokenizer_path}/label_encoders_{timestamp}.pkl"
     with open(tokenizer_filename, 'wb') as f:
         pickle.dump(label_encoders, f)

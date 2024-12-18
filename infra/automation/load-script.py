@@ -14,7 +14,7 @@ def create_spark_session():
             .config("spark.jars.packages", "org.postgresql:postgresql:42.5.0,org.apache.hadoop:hadoop-aws:3.2.0") \
             .config("spark.hadoop.fs.s3a.access.key", os.getenv('MINIO_ACCESS_KEY', 'minio')) \
             .config("spark.hadoop.fs.s3a.secret.key", os.getenv('MINIO_SECRET_KEY', 'minio123')) \
-            .config("spark.hadoop.fs.s3a.endpoint", os.getenv('MINIO_ENDPOINT', 'http://localhost:9000')) \
+            .config("spark.hadoop.fs.s3a.endpoint", os.getenv('MINIO_ENDPOINT', 'http://minio:9000')) \
             .config("spark.hadoop.fs.s3a.path.style.access", "true") \
             .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem") \
             .config("spark.hadoop.fs.s3n.impl", "org.apache.hadoop.fs.s3native.S3NativeFileSystem") \
@@ -73,7 +73,7 @@ def transfer_data(spark, input_path, target_db, target_table, postgres_propertie
         print(df.show())
 
         df.write.jdbc(
-            url=f"jdbc:postgresql://localhost:5432/{target_db}",
+            url=f"jdbc:postgresql://postgres-warehouse:5432/{target_db}",
             table=target_table,
             mode="append", 
             properties=postgres_properties
@@ -87,7 +87,7 @@ def main():
     spark = create_spark_session()
     
     minio_client = Minio(
-        os.getenv('MINIO_ENDPOINT', 'localhost:9000').replace('http://', ''),
+        os.getenv('MINIO_ENDPOINT', 'minio:9000').replace('http://', ''),
         access_key=os.getenv('MINIO_ACCESS_KEY', 'minio'),
         secret_key=os.getenv('MINIO_SECRET_KEY', 'minio123'),
         secure=False
