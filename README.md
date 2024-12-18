@@ -49,14 +49,14 @@ Jalankan consumer dan producer dengan menjalankan command di atas
 ```sh
 Go to http://localhost:8080, login and then apply Scripts
 ```
-![orchestration](https://github.com/Raditsoic/lingo-lakehouse/blob/main/documentation/orchestration(airflow).png)
+![orchestration](https://github.com/Raditsoic/lingo-lakehouse/blob/main/documentation/orchestration(airflow).jpg)
 
 ### **Run FastAPI**
 ```sh
 cd app && python main.py
 ```
 jalankan FastAPI dengan menjalankan command di atas
-![fastapi](https://github.com/Raditsoic/lingo-lakehouse/blob/main/documentation/api.png)
+![fastapi](https://github.com/Raditsoic/lingo-lakehouse/blob/main/documentation/api.jpg)
 
 Berikut adalah tampilan UI setelah dijalankan
 ![UI](https://github.com/Raditsoic/lingo-lakehouse/blob/main/documentation/ui.jpg)
