@@ -12,7 +12,7 @@ Projek ini merupakan sebuah projek yang akan merekomendasikan language learning 
 
 
 ## Workflow
-![workflow](https://github.com/Raditsoic/lingo-lakehouse/blob/main/Docummentation/Workflow.jpg)
+![workflow](https://github.com/Raditsoic/lingo-lakehouse/blob/main/documentation/Workflow.jpg)
 
 # How The Program Works
 ## Download Dataset
@@ -22,7 +22,7 @@ bash dataset/download.sh
 ```
 Untuk menjalankan program, kita mendownload dataset duolingo dengan menjalankan command di atas
 
-![download](https://github.com/Raditsoic/lingo-lakehouse/blob/main/Docummentation/download.png)
+![download](https://github.com/Raditsoic/lingo-lakehouse/blob/main/documentation/download.png)
 
 pindahkan dataset (duolingo-spaced-repetition-data.csv)ke folder dataset
 ## How to run?
@@ -35,7 +35,7 @@ docker-compose up -d
 ```
 Jalankan environment docker dengan menjalankan command di atas
 
-![docker-compose](https://github.com/Raditsoic/lingo-lakehouse/blob/main/Docummentation/dockercomposeup.png)
+![docker-compose](https://github.com/Raditsoic/lingo-lakehouse/blob/main/documentation/dockercomposeup.png)
 
 ### **Start Consumer and Producer**
 ```sh
@@ -43,7 +43,7 @@ bash start.sh
 ```
 Jalankan consumer dan producer dengan menjalankan command di atas
 
-![bashstart](https://github.com/Raditsoic/lingo-lakehouse/blob/main/Docummentation/bashstartsh.png)
+![bashstart](https://github.com/Raditsoic/lingo-lakehouse/blob/main/documentation/bashstartsh.png)
 
 ### **Apply Orchestration**
 ```sh
@@ -51,4 +51,4 @@ Go to http://localhost:8080, login and then apply Scripts
 ```
 Berikut adalah tampilan UI setelah dijalankan
 
-![UI](https://github.com/Raditsoic/lingo-lakehouse/blob/main/Docummentation/ui.jpg)
+![UI](https://github.com/Raditsoic/lingo-lakehouse/blob/main/documentation/ui.jpg)
